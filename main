@@ -1,0 +1,132 @@
+class Matrix:
+    def __init__(self):
+        self.count = 0
+        self.variable_dict = {}
+
+    def menu(self, *option):
+        while option != "0":
+            option = input("1. Add matrices\n2. Multiply matrix by a constant\n3. Multiply matrices\n4. Transpose matrix\n5. Calculate a determinant\n6. Inverse matrix\n0. Exit\nYour choice: ")
+            if option == "1":
+                self.addition()
+            elif option == "2":
+                self.multiply_constant()
+            elif option == "3":
+                self.multiply()
+            elif option == "4":
+                self.transpose()
+            elif option == "5":
+                user = input("Enter size of matrix:").split()
+                mat1 = [input("Enter matrix:").split() for i in range(int(user[0]))]
+                print("The result is:")
+                print(self.determinant(mat1))
+            elif option == "6":
+                user = input("Enter matrix size:").split() 
+                mat1 = [input("Enter matrix:").split() for i in range(int(user[0]))]
+                self.get_matrix_inverse(mat1)
+
+    def addition(self):
+        user = input("Enter size of first matrix:").split()
+        mat1 = [input("Enter first matrix:").split() for i in range(int(user[0]))]
+        user2 = input("Enter size of second matrix:").split()
+        mat2 = [input("Enter second matrix:").split() for i in range(int(user2[0]))]
+        if user == user2:
+            final_matrix = [[float(mat1[i][j]) + float(mat2[i][j]) for j in range(int(user[1]))] for i in range(int(user[0]))]
+            print("The result is:")
+            for i in final_matrix:
+                print(*i)
+        else:
+            print("The operation cannot be performed.")
+
+    def multiply_constant(self):
+        user = input("Enter size of matrix:").split()
+        mat1 = [input("Enter matrix:").split() for i in range(int(user[0]))]
+        constant = int(input("Enter constant:"))
+        final_matrix = [[float(mat1[i][j]) * constant for j in range(int(user[1]))] for i in range(int(user[0]))]
+        print("The result is:")
+        for i in final_matrix:
+            print(*i)
+  
+    def multiply(self):
+        user = input("Enter size of first matrix:").split()
+        mat1 = [input("Enter first matrix:").split() for i in range(int(user[0]))]
+        user2 = input("Enter size of second matrix:").split()
+        mat2 = [input("Enter second matrix:").split() for i in range(int(user2[0]))]
+
+        if user[1] == user2[0]:
+            final_matrix = [[sum(float(a) * float(b) for a, b in zip(mat1_row, mat2_col)) for mat2_col in zip(*mat2)] for mat1_row in mat1]
+            print("The result is:")
+            for i in final_matrix:
+                print(*i)
+        else:
+            print("The operation cannot be performed.")
+
+    def transpose(self):
+        kind = input("1. Main diagonal\n2. Side diagonal\n3. Vertical line\n4. Horizontal line\nYour choice: ")
+        user = input("Enter matrix size: ").split()
+        mat1 = [input("Enter matrix:\n").split() for i in range(int(user[0]))]
+        if kind == "1":
+            final_matrix = [[mat1[j][i] for j in range(len(mat1))] for i in range(len(mat1[0]))] 
+        elif kind == "2":
+            mat1 = mat1[::-1]
+            final_matrix = [[mat1[j][i] for j in range(len(mat1))] for i in range(len(mat1[0]))]
+            final_matrix = final_matrix[::-1]
+        elif kind == "3":
+            final_matrix = [i[::-1] for i in mat1]
+        elif kind == "4":
+            final_matrix = [i for i in mat1[::-1]]
+        print("The result is:")
+        for i in final_matrix:
+                print(*i)
+    
+    def transpose2(self, m):
+        return [[m[j][i] for j in range(len(m))] for i in range(len(m[0]))] 
+
+    def get_matrix_minor(self, m, i, j):
+        return [row[:j] + row[j+1:] for row in (m[:i] + m [i+1:])]
+
+    def determinant(self, m):
+        if len(m) == 1:
+            return m[0][0]
+        elif len(m) == 2:
+            return float(m[0][0]) * float(m[1][1]) - float(m[0][1]) * float(m[1][0])
+        determinant = 0
+        for c in range(len(m)):
+            determinant += ((-1)**c) * float(m[0][c]) * self.determinant(self.get_matrix_minor(m, 0 ,c))
+        return determinant
+    
+    def get_matrix_inverse(self, m):
+        determinant = self.determinant(m)
+        #special case for 2x2 matrix:
+        if determinant == 0:
+            print("This matrix doesn't have an inverse.")
+        elif len(m) == 2:
+            final_matrix = [[float(m[1][1]) / determinant, -1 * float(m[0][1]) / determinant],
+                            [-1 * float(m[1][0]) / determinant, float(m[0][0]) / determinant]]
+            for i in final_matrix:
+                print(*i)
+        #find matrix of cofactors
+        else:
+            cofactors = []
+            for r in range(len(m)):
+                cofactor_row = []
+                for c in range(len(m)):
+                    minor = self.get_matrix_minor(m, r, c)
+                    cofactor_row.append(((-1)**(r + c)) * self.determinant(minor))
+                cofactors.append(cofactor_row)
+            cofactors = self.transpose2(cofactors)
+            for r in range(len(cofactors)):
+                for c in range(len(cofactors)):
+                    cofactors[r][c] = cofactors[r][c] / determinant
+                    cofactors[r][c] = str(cofactors[r][c])
+                    cofactors_list = cofactors[r][c].split(".")
+                    cofactors[r][c] = float(cofactors_list[0] + "." + cofactors_list[1][:2])
+                    if cofactors[r][c] == -0:
+                        cofactors[r][c] = int(cofactors[r][c])
+            print("The result is:")
+            for i in cofactors:
+                print(*i)
+
+
+if __name__ == "__main__":
+    run = Matrix()
+    run.menu()
